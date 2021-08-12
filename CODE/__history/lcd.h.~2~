@@ -1,0 +1,257 @@
+#define _lcd_h_
+#include <math.h>
+#use delay(clock=4000000)
+void lcd_init(void);             // Ham dung de khoi dong C.LCD.
+byte lcd_read_byte(void);         // Ham xu ly doc thong tin (dang 8 bit) tu thong tin dang 4 bit tu C.LCD.
+byte lcd_read_nibble(void);         // Ham doc thong tin (dang 4 bit / nibble) tu C.LCD.
+void lcd_send_byte(byte address, byte n);   // Ham gui thong tin (byte) toi C.LCD tai dia chi (address).
+void lcd_send_nibble(byte n);      // Ham gui thong tin (dang 4 bit / nibble) sang C.LCD.
+void lcd_gotoxy(byte x, byte y);   // Ham thiet lap vi tri ghi tren C.LCD.
+char lcd_getc(byte x, byte y);      // Ham tra ve ky tu tai vi tri (x,y) tren C.LCD.
+void lcd_putc(char c);            // Ham se hien thi ky tu c tai vi tri ke tiep tren C.LCD.
+// Khai bao bien.
+// Dinh nghia cac thong so.
+#define LCD_RS_PIN     PIN_D6
+#define LCD_RW_PIN     PIN_D5
+#define LCD_ENABLE_PIN PIN_D4
+#define LCD_DATA0          PIN_D0
+#define LCD_DATA1          PIN_D1
+#define LCD_DATA2          PIN_D2
+#define LCD_DATA3          PIN_D3
+#define LCD_DATA4      PIN_C7
+#define LCD_DATA5      PIN_C6
+#define LCD_DATA6      PIN_C5
+#define LCD_DATA7      PIN_C4
+/*
+#define LCD_RS_PIN            PIN_C5   // Cac ket noi C.LCD voi vi dieu khien.
+#define LCD_RW_PIN         PIN_C6
+#define LCD_ENABLE_PIN     PIN_C7
+#define LCD_DATA4          PIN_D4
+#define LCD_DATA5          PIN_D5
+#define LCD_DATA6          PIN_D6
+#define LCD_DATA7          PIN_D7  
+*/
+/*
+#define LCD_RS_PIN         PIN_D1   // Cac ket noi C.LCD voi vi dieu khien.
+#define LCD_RW_PIN      PIN_D2
+#define LCD_ENABLE_PIN  PIN_D3
+#define LCD_DATA4       PIN_D4
+#define LCD_DATA5       PIN_D5
+#define LCD_DATA6       PIN_D6
+#define LCD_DATA7       PIN_D7  
+*/
+#define lcd_output_enable(x)   output_bit(LCD_ENABLE_PIN, x)   // Lenh dieu khien chan LCD_ENABLE_PIN.
+#define lcd_enable_tris()   output_drive(LCD_ENABLE_PIN)
+
+#define lcd_output_rs(x)   output_bit(LCD_RS_PIN, x)   // Lenh dieu khien chan LCD_RS_PIN.
+#define lcd_rs_tris()      output_drive(LCD_RS_PIN)
+
+#define lcd_output_rw(x)   output_bit(LCD_RW_PIN, x)   // Lenh dieu khien chan LCD_RW_PIN
+#define lcd_rw_tris()      output_drive(LCD_RW_PIN)
+
+#define lcd_line_one   0x00    // Dia chi RAM C.LCD cho hang thu 1.
+#define lcd_line_two   0x40    // Dia chi RAM C.LCD cho hang thu 2.
+#define lcd_line_three   0x14
+#define lcd_line_four   0x54
+#define LCD_TYPE 0x02           // Thong tin cau hinh C.LCD: 0x00=5x7, 0x01=5x10, 0x02=2 lines
+
+// Dinh nghia cac hang so.
+byte const LCD_INIT_STRING[4] = {0x28 | (LCD_TYPE << 2), 0x0C, 0x01, 0x06};
+        // Cac byte nay can thiet de gui toi C.LCD, dung de khoi dong cau hinh hoat dong cho C.LCD.
+      // Byte 1: 0x20 | (LCD_TYPE << 2) - So bit du lieu giao tiep (DL), so dong hien thi (N), kieu ky tu (F).
+      //         0 0 1 DL N F x x (DL: Data Length, N: Number Line, F: Font).
+         // Truong hop 1: 0x20 - 4 bit / 1 dong / 5 x 7.
+         // Truong hop 2: 0x24 - 4 bit / 1 dong / 5 x 10.
+         // Truong hop 3: 0x28 - 4 bit / 2 dong / 5 x 7.
+      // Byte 2: 0x0C - Dieu khien hien thi (Bat hien thi, tat con tro, tat nhap nhay con tro).
+      //         0 0 0 0 1 D C B (D: Display, C: Cursor, B: Blink).
+      // Byte 3: 0x01 - Xoa hien thi va tra con tro ve dau dong.
+      // Byte 4: 0x06 - Dat che do dau vao (Che do tang dia chi, tat dich chuyen hien thi).
+      //         0 0 0 0 0 1 I/D S (I/D: Increment/Decrement, S: Shift).
+      // Byte 5: .... - Doi con tro / hien thi.
+      //         0 0 0 1 S/C R/L x x (S/C: Screen/Cursor, R/L: Right/Left).
+
+// ***************************************************
+void lcd_init(void)    // Ham dung de khoi dong C.LCD.
+{
+// Khai bao bien.
+byte i;
+// Dinh nghia ham.
+output_drive(LCD_DATA0);
+output_drive(LCD_DATA1);
+output_drive(LCD_DATA2);
+output_drive(LCD_DATA3);
+output_drive(LCD_DATA4);   // Thiet lap chan port (Data) o che do ngo ra.
+output_drive(LCD_DATA5);
+output_drive(LCD_DATA6);
+output_drive(LCD_DATA7);
+lcd_enable_tris();
+output_drive(LCD_ENABLE_PIN);// Thiet lap chan port (Control: EN, RS, RW) o che do ngo ra.
+lcd_rs_tris();
+output_drive(LCD_RS_PIN);
+lcd_rw_tris();
+output_drive(LCD_RW_PIN);
+lcd_output_rs(0);         // RS = 0 - Databus = Bus lenh.
+lcd_output_rw(0);         // RW = 0 - Ghi thong tin vao C.LCD.
+lcd_output_enable(0);      // EN = 0 - Cam truy xuat C.LCD.
+
+delay_ms(15);   // Tao thoi gian tre 15ms (Thoi gian de LCD tu reset khi moi duoc cap nguon).
+
+for(i=1;i<=3;i++)         // Doan lenh khoi dong C.LCD o che do 8 bit duoc thuc hien 3 lan lien tiep
+   {                  // tai thoi diem ban dau (de dam bao cho C.LCD hoat dong on dinh trong 
+   lcd_send_nibble(0x03);    // truong hop khi cung cap nguon cho C.LCD ma dien ap nguon tang len cham).
+   delay_ms(5);         // RS = 0, RW = 0, D7 - D4 = 0011 (0x03) -> DL = 1 (8 bit).
+   }                  // Do co BF (Busy Flag) chua kiem tra duoc trong thoi diem nay, nen phai 
+                     // thuc hien 3 lan (xem luu do khoi dong C.LCD cua nha san xuat).
+
+lcd_send_nibble(0x02);      // Doan lenh khoi dong C.LCD o che do 4 bit. Tu luc nay thi 4 bit cao duoc ghi
+                     // ra truoc tien, sau do la 4 bit thap.
+                     // RS = 0, RW = 0, D7 - D4 = 0010 (0x02) -> DL = 0 (4 bit).
+                     // Co BF (Busy Flag) co the bat dau kiem tra duoc tu luc nay.
+
+for(i=0;i<=3;i++)
+   lcd_send_byte(0,LCD_INIT_STRING[i]);   // Goi ham truyen thong tin (lenh) sang C.LCD.
+}                                 // Lenh: Thiet lap cau hinh hoat dong cho C.LCD.
+
+// ***************************************************
+byte lcd_read_byte(void)   // Ham xu ly doc thong tin (dang 8 bit) tu thong tin dang 4 bit tu C.LCD.
+{
+// Khai bao bien.
+byte low,high;
+// Dinh nghia ham.
+output_float(LCD_DATA4);   // Thiet lap chan port o che do ngo vao.
+output_float(LCD_DATA5);
+output_float(LCD_DATA6);
+output_float(LCD_DATA7);
+
+lcd_output_rw(1);         // RW = 1 - Doc thong tin tu C.LCD.
+                  // Tien hanh doc 4 bit cao cua thong tin tu C.LCD.
+delay_cycles(1);         // Tao tre 1 chu ky (t=1us voi fosc=4MHz).
+lcd_output_enable(1);      // EN = 1 - Cho phep truy xuat C.LCD.
+delay_cycles(1);         // Tao tre 1 chu ky (t=1us voi fosc=4MHz).
+high = lcd_read_nibble();   // Cat tam 4 bit du lieu (4 bit cao).
+lcd_output_enable(0);      // EN = 0 - Cam truy xuat C.LCD.
+                  // Tien hanh doc 4 bit thap cua thong tin tu C.LCD.
+delay_cycles(1);         // Tao tre 1 chu ky (t=1us voi fosc=4MHz).
+lcd_output_enable(1);      // EN = 1 - Cho phep truy xuat C.LCD.
+delay_cycles(1);         // Tao tre 1 chu ky (t=1us voi fosc=4MHz).
+low = lcd_read_nibble();   // Cat tam 4 bit du lieu (4 bit thap).
+lcd_output_enable(0);      // EN = 0 - Cam truy xuat C.LCD.
+
+output_drive(LCD_DATA4);   // Thiet lap chan port o che do ngo ra.
+output_drive(LCD_DATA5);
+output_drive(LCD_DATA6);
+output_drive(LCD_DATA7);
+
+return((high<<4) | low);   // Tra ve ket qua du lieu (dang 8 bit).
+}
+
+// ***************************************************
+byte lcd_read_nibble(void)   // Ham doc thong tin (dang 4 bit / nibble) tu C.LCD.
+{
+// Khai bao bien.
+byte n = 0x00;   // Mac dinh gia tri ban dau cho noi chua se thong tin.
+// Dinh nghia ham.
+n |= input(LCD_DATA4);         // Doc lan luot cac bit tu bus du lieu.
+n |= input(LCD_DATA5) << 1;
+n |= input(LCD_DATA6) << 2;
+n |= input(LCD_DATA7) << 3;
+
+return(n);   // Tra ve ket qua doc duoc (data = 0000 xxxx).
+}
+
+// ***************************************************
+void lcd_send_byte(byte address, byte n)   // Ham gui thong tin (byte) toi C.LCD tai dia chi (address).
+{                                 // address = 0: Lenh / 1: Du lieu.
+                                 // byte = Thong tin can gui (8 bit).
+// Khai bao bien.
+
+// Dinh nghia ham.  
+lcd_output_rs(0);      // RS = 0 - Databus = Bus lenh.
+while(bit_test(lcd_read_byte(),7));   // Cho Busy Flag = 0 (C.LCD da xu ly xong).
+lcd_output_rs(address);   // RS = address - Databus = Bus lenh/du lieu.
+delay_cycles(1);      // Tao tre 1 chu ky (t=1us voi fosc=4MHz).
+lcd_output_rw(0);      // RW = 0 - Ghi thong tin vao C.LCD.
+delay_cycles(1);      // Tao tre 1 chu ky (t=1us voi fosc=4MHz).
+lcd_output_enable(0);   // EN = 0 - Cam truy xuat C.LCD.
+lcd_send_nibble(n >> 4);   // Goi ham truyen 4 bit cao sang C.LCD.
+lcd_send_nibble(n & 0x0F);   // Goi ham truyen 4 bit thap sang C.LCD.
+}
+
+// ***************************************************
+void lcd_send_nibble(byte n)   // Ham gui thong tin (dang 4 bit / nibble) sang C.LCD.
+{                        // n = Thong tin can gui. 4 bit can gui phai nam vi tri 4 bit thap.
+// Khai bao bien.
+
+// Dinh nghia ham. 
+output_bit(LCD_DATA4, bit_test(n, 0));   // Xuat lan luot cac bit len bus du lieu.
+output_bit(LCD_DATA5, bit_test(n, 1));
+output_bit(LCD_DATA6, bit_test(n, 2));
+output_bit(LCD_DATA7, bit_test(n, 3));
+    
+delay_cycles(1);      // Tao tre 1 chu ky (t=1us voi fosc=4MHz).
+lcd_output_enable(1);   // Tao xung ghi thong tin vao C.LCD.
+delay_us(2);         // Tao tre 2 chu ky (t=2us voi fosc=4MHz).
+lcd_output_enable(0);   // Tao xung ghi thong tin vao LCD - EN = 1->0 (High to Low).
+}
+
+// ***************************************************
+void lcd_gotoxy(byte x, byte y)   // Ham thiet lap vi tri ghi tren C.LCD (Goc tren ben trai co toa do la 1,1).
+{
+// Khai bao bien.
+byte address;
+// Dinh nghia ham.  
+if(y==1)               // Kiem tra vi tri truy xuat thuoc hang 2.
+   address=lcd_line_one;      // Nap dia chi RAM cua hang 2. 
+else if(y==2)      // Neu vi tri truy xuat thuoc hang 1.
+   address=lcd_line_two;      // Nap dia chi RAM cua hang 1.
+else if(y==3)
+   address=lcd_line_three;     
+else if(y==4)
+   address=lcd_line_four;   
+
+address+=x-1;               // Ghep dia chi cot vao dia chi tong quat (address). address = address + (x-1).      
+                        // Ta qui uoc: Goc tren ben trai co toa do la 1,1 -> Cot dau tien la Cot 1
+                        // (x-1) vi C.LCD qui uoc cot dau tien co dia chi la 0.
+lcd_send_byte(0,0x80|address);   // Goi ham truyen thong tin (lenh) sang C.LCD.
+}                        // Lenh: Thiet lap dia chi DDRAM cua C.LCD (addresss).   
+
+// ***************************************************
+char lcd_getc(byte x, byte y)   // Ham tra ve ky tu tai vi tri (x,y) tren C.LCD.
+{
+// Khai bao bien.
+char value;
+// Dinh nghia ham.  
+lcd_gotoxy(x,y);            // Xac dinh toa do C.LCD can truy xuat.
+while(bit_test(lcd_read_byte(),7));   // Cho Busy Flag = 0 (C.LCD da xu ly xong).
+lcd_output_rs(1);         // RS = 1 - Databus = Bus du lieu.
+value = lcd_read_byte();   // Doc ve tu C.LCD.
+lcd_output_rs(0);         // RS = 0 - Databus = Bus lenh.
+
+return(value);      // Tra ve ma ky tu tai toa do yeu cau.
+}
+
+// ***************************************************
+void lcd_putc(char c)   // Ham se hien thi ky tu c tai vi tri ke tiep tren C.LCD.
+{
+// Khai bao bien.
+
+// Dinh nghia ham. 
+switch (c)
+   {
+   case '\f':     // Chuc nang xoa hien thi.
+      lcd_send_byte(0,0x01);   // Goi ham truyen thong tin (lenh) sang C.LCD.
+      delay_ms(2);         // Lenh: Xoa hien thi tren man hinh C.LCD (0x01).
+      break;
+   case '\n':       // Chuc nang bat dau hang thu 2.
+         lcd_gotoxy(1,0x02);     // Goi ham truyen thong tin (du lieu) sang C.LCD.   
+      break;
+    case '\b':       // Chuc nang lui ve 1 vi tri.
+      lcd_send_byte(0,0x10);    // Goi ham truyen thong tin (lenh) sang C.LCD. 
+      break;               // Lenh: Doi con tro sang trai (0x10).
+   default:       // Chuc nang hien thi ky tu c tai vi tri ke tiep tren C.LCD.
+      lcd_send_byte(1,c);     // Goi ham truyen thong tin (du lieu) sang C.LCD.
+      break;
+   }
+}      
+// ***************************************************   

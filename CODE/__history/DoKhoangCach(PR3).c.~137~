@@ -1,0 +1,94 @@
+//PIC16F877A - HC-SR04
+//NguyenDucThang_101183
+ 
+#include <16F877A.h>
+#device *=16 adc=10
+
+#fuses HS,NOWDT,NOPROTECT,NOLVP
+#use delay(clock=20M)
+
+#include <lcd.h>
+
+#define TRIG      PIN_B0
+#define ECHO      input(PIN_B1)
+#define BUTTON    input(PIN_A3)
+
+float DoKhoangCach(void);
+
+
+void main()
+{
+   //output_drive(PIN_A3);
+   float Value;
+   char status = 0;
+   lcd_init();
+   lcd_putc('\f');
+   lcd_gotoxy(1,1);
+   printf(lcd_putc,"     DO AN 3    ");
+   delay_ms(4000);
+   lcd_gotoxy(1,2);
+   printf(lcd_putc,"NGUYEN DUC THANG");
+   delay_ms(4000);
+   
+   while(TRUE)
+   {   
+//!      if(input(PIN_A3)==0)
+//!      {        
+//!            Value = DoKhoangCach();
+//!            lcd_gotoxy(1,1);
+//!            printf(lcd_putc,"   KHOANG CACH     ");
+//!            lcd_gotoxy(1,2);
+//!            printf(lcd_putc,"   >>>%.1f cm         \r\n",Value);        
+//!            delay_ms(100);
+//!      }
+       Value = DoKhoangCach();
+            lcd_gotoxy(1,1);
+            printf(lcd_putc,"   KHOANG CACH     ");
+            lcd_gotoxy(1,2);
+            printf(lcd_putc,"   >>>%.1f cm         \r\n",Value);        
+            delay_ms(100);
+   }
+}
+
+float DoKhoangCach(void)
+{
+   float Value;
+   int16 TimeOut=0;
+   int16 Time;
+   
+   output_high(TRIG);
+   delay_ms(10);
+   output_low(TRIG);
+   
+   while(ECHO==0);
+   setup_timer_1(T1_INTERNAL|T1_DIV_BY_1);
+   set_timer1(0);
+   while(ECHO==1);
+   setup_timer_1(T1_DISABLED);
+   Time = get_timer1();
+   
+//!T = 4 * (1/Fosc) * (Prescale)
+//!  = 4 * (1/20) * 1
+//!  = 0.2(us)=1/5us
+//!=> Tmax = 1 * (2^16) = 65536(us)   
+   
+//!   Value = (float)Time/58.0f;
+//!   Value = Value*0.2f;
+   Value = Time;
+   
+   if (Time >= 65499)
+   {
+      lcd_gotoxy(1,1);
+      printf(lcd_putc,"NGOAI PHAM VI DO");
+      lcd_gotoxy(1,2);
+      printf(lcd_putc,"                ");        
+      delay_ms(100);
+   }
+   else
+   {
+      Value = (float)Time/58.0f;
+      Value = Value*0.2f;   
+   }
+   return Value;
+}
+

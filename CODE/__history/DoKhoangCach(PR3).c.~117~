@@ -1,0 +1,184 @@
+//PIC16F877A - HC-SR04
+ 
+#include <16F877A.h>
+#device *=16 adc=10
+
+#fuses HS,NOWDT,NOPROTECT,NOLVP
+#use delay(clock=20M)
+
+#include <lcd.h>
+//#use fast_io(B)
+
+//!#define LCD_RS_PIN     PIN_D6
+//!#define LCD_RW_PIN     PIN_D5
+//!#define LCD_ENABLE_PIN PIN_D4
+//!#define LCD_DATA4      PIN_C7
+//!#define LCD_DATA5      PIN_C6
+//!#define LCD_DATA6      PIN_C5
+//!#define LCD_DATA7      PIN_C4
+#define TRIG      PIN_B0
+#define ECHO      input(PIN_B1)
+#define BUTTON    input(PIN_A3)
+
+float DoKhoangCach(void);
+
+
+void main()
+{
+   output_drive(PIN_A3);//cai dat ngo ra
+   float Value;
+   char status = 0;
+   lcd_init();
+   lcd_putc('\f');
+   lcd_gotoxy(1,1);
+   printf(lcd_putc,"NGUYEN DUC THANG");
+   delay_ms(4000);
+   lcd_gotoxy(1,2);
+   printf(lcd_putc,"CAM BIEN HC-SR04");
+   delay_ms(4000);
+//!   lcd_gotoxy(1,1);
+//!   printf(lcd_putc,"CAM BIEN SR 04");
+//!   lcd_gotoxy(1,2);
+//!   printf(lcd_putc,"DO KHOANG CACH!\r\n");
+//!   delay_ms(2000);
+   
+   while(TRUE)
+   {
+      
+//!      if(!input(pin_A3))
+//!         {
+//!            delay_ms(20);
+//!            if(!input(pin_A3))
+//!            {
+//!               Value = DoKhoangCach();
+//!            lcd_gotoxy(1,1);
+//!            printf(lcd_putc,"  KHOANG CACH     ");
+//!            lcd_gotoxy(1,2);
+//!            //printf(lcd_putc,"VALUE=%.1f",Value);
+//!            printf(lcd_putc,"   >>%.0f cm         \r\n",Value);        
+//!            delay_ms(100);
+//!            }
+//!         }
+//!         while(!input(pin_A3));
+//!   }
+      
+      if(BUTTON==0)
+      {
+//!         if (status == 1)
+//!         {
+            status = 0;
+            delay_ms(500);
+            Value = DoKhoangCach();
+            lcd_gotoxy(1,1);
+            printf(lcd_putc,"  KHOANG CACH     ");
+            lcd_gotoxy(1,2);
+            printf(lcd_putc,"VALUE=%.1f",Value);
+            printf(lcd_putc,"   >>%.0f cm         \r\n",Value);        
+            delay_ms(100);
+//!         }
+//!            
+            
+//!         else
+//!         {
+//!            status = 1;
+//!            lcd_init();
+//!            lcd_putc('\f');
+//!            lcd_gotoxy(1,1);
+//!            printf(lcd_putc,"NGUYEN DUC THANG");
+//!            delay_ms(4000);
+//!            lcd_gotoxy(1,2);
+//!            printf(lcd_putc,"CAM BIEN HC-SR04");
+//!            delay_ms(4000);
+//!         }
+      }
+   }
+}
+
+float DoKhoangCach(void)
+{
+   float Value;
+   int16 TimeOut=0;
+   int16 Time;
+   //output_high(pin_B0);
+   output_high(TRIG);
+   delay_ms(10);
+   //output_low(pin_B0);
+   output_low(TRIG);
+   
+   while(ECHO==0);//cho chan echo len muc cao
+   setup_timer_1(T1_INTERNAL|T1_DIV_BY_1);
+   set_timer1(0);
+   while(ECHO==1);//cho chan echo xuong muc thap
+   setup_timer_1(T1_DISABLED);//dung timer1
+   Time = get_timer1();
+   
+//!T = 4 * (1/Fosc) * (Prescale)
+//!  = 4 * (1/20) * 1
+//!  = 0.2(us)=1/5us
+//!=> Tmax = 1 * (2^16) = 65536(us)   
+   
+   Value = (float)Time/58.0f;
+   Value = Value*0.2f;
+   
+   return Value;
+}
+
+
+
+
+
+//!int8 check;
+//!unsigned int16 i, khoangcach;
+//!
+//!void main()
+//!{  
+//!   set_tris_a(0x00);
+//!   output_b(0x00);
+//!   set_tris_b(0x02);                                   
+//!   lcd_init();                                      
+//!   setup_timer_1 (T1_INTERNAL|T1_DIV_BY_2);       
+//!   set_timer1(0);                                   
+//!   lcd_putc('\f');                                  
+//!   lcd_gotoxy(3, 1);                              
+//!   lcd_putc("KHOANG CACH:");
+//!   
+//!   while(TRUE)
+//!   {  
+//!      output_a(0x00);
+//!      check = 0;
+//!      i = 0;
+//!      output_high(PIN_B0);
+//!      delay_us(10);
+//!      output_low(PIN_B0);
+//!      set_timer1(0);         
+//!      
+//!      while(!input(PIN_B1) && (get_timer1() < 1000));
+//!      if(get_timer1() > 990)
+//!      check = 1;                                   
+//!      set_timer1(0);                                
+//!      while(input(PIN_B1) && (i < 25000))
+//!      i = get_timer1();                            
+//!      if(i > 24990)                                  
+//!      check = 2;
+//!      if(check == 1)
+//!      {
+//!         lcd_gotoxy(3, 2);                           
+//!         lcd_putc("  Time Out  ");
+//!      }
+//!      if(check == 2)
+//!      {
+//!         lcd_gotoxy(3, 2);                           
+//!         lcd_putc("NGOAI PHAM VI");
+//!         output_a(0xff);
+//!      }
+//!      else
+//!      {  
+//!         khoangcach = i/58;                           
+//!         lcd_gotoxy(3, 2);                      
+//!         lcd_putc("       cm     ");
+//!         lcd_gotoxy(6, 2);                        
+//!         printf(lcd_putc,"%3Lu",khoangcach);
+//!      }
+//!      delay_ms(100);
+//!   }
+//!}

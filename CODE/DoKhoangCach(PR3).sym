@@ -1,0 +1,167 @@
+004-005 @WRITE_PROGRAM_MEMORY8.P1
+004-005 @READ_PROGRAM_MEMORY8.P2
+008     PSP_DATA
+015     CCP_1
+015     CCP_1_LOW
+016     CCP_1_HIGH
+01B     CCP_2
+01B     CCP_2_LOW
+01C     CCP_2_HIGH
+020     @TRIS_C
+021-024 MAIN.value
+021-024 atan2.y
+025-028 atan2.x
+025     MAIN.check
+026     lcd_init.i
+026-029 @FLT.P1
+026-029 @PRINTF_L32D_781FPFPF.P2
+026     @PSTRINGCN7_781.P3
+026-029 DoKhoangCach.value
+026     MAIN.@SCRATCH1
+026     @PSTRINGC7_781.@SCRATCH1
+027     lcd_init.@SCRATCH1
+027     @PSTRINGC7_781.@SCRATCH2
+027     @PSTRINGCN7_781.@SCRATCH1
+028     @PSTRINGC7_781.@SCRATCH3
+028     @PSTRINGCN7_781.@SCRATCH2
+029-02C atan2.z
+029     @PSTRINGC7_781.@SCRATCH4
+029     @PSTRINGCN7_781.@SCRATCH3
+02A     @PRINTF_L32D_781FPFPF.P1
+02A-02D @FLT.P2
+02A-02B DoKhoangCach.time
+02A     @PSTRINGCN7_781.@SCRATCH4
+02B     @PRINTF_L32D_781FPFPF.@SCRATCH1
+02C-02D @ITOF.P1
+02C     @PRINTF_L32D_781FPFPF.@SCRATCH2
+02C     DoKhoangCach.@SCRATCH1
+02D.0   atan2.sign
+02D     @PRINTF_L32D_781FPFPF.@SCRATCH3
+02D     DoKhoangCach.@SCRATCH2
+02E     atan2.quad
+02E     @FLT.@SCRATCH1
+02E     @PRINTF_L32D_781FPFPF.@SCRATCH4
+02E     DoKhoangCach.@SCRATCH3
+02F     @FLT.@SCRATCH2
+02F     @PRINTF_L32D_781FPFPF.@SCRATCH5
+02F     DoKhoangCach.@SCRATCH4
+030-033 @DIVFF.P1
+030     @PRINTF_L32D_781FPFPF.@SCRATCH6
+031     @PRINTF_L32D_781FPFPF.@SCRATCH7
+032     @PRINTF_L32D_781FPFPF.@SCRATCH8
+033-036 @FTOSD.P1
+033     lcd_putc.c
+033-036 @DIV3232.P1
+033-036 @MULFF.P2
+034     @delay_ms2.P1
+034     lcd_gotoxy.x
+034-037 @DIVFF.P1
+035     lcd_gotoxy.y
+036     lcd_gotoxy.address
+037-03A @DIV3232.P1
+037-03A @MULFF.P2
+037     lcd_gotoxy.@SCRATCH1
+037     @FTOSD.@SCRATCH1
+038     lcd_send_byte.address
+038     @DIVFF.@SCRATCH1
+039     lcd_send_byte.n
+039     @DIVFF.@SCRATCH2
+03A     lcd_read_byte.low
+03A     @DIVFF.@SCRATCH3
+03A     lcd_send_byte.@SCRATCH1
+03B     lcd_read_byte.high
+03B     lcd_send_nibble.n
+03B     @MULFF.@SCRATCH1
+03B     @DIVFF.@SCRATCH4
+03B     @DIV3232.@SCRATCH1
+03C     lcd_read_nibble.n
+03C     @MULFF.@SCRATCH2
+03C     @DIVFF.@SCRATCH5
+03C     lcd_read_byte.@SCRATCH1
+03C     @DIV3232.@SCRATCH2
+03D     @MULFF.@SCRATCH3
+03D     @DIVFF.@SCRATCH6
+03D     lcd_read_nibble.@SCRATCH1
+03D     @DIV3232.@SCRATCH3
+03E     @MULFF.@SCRATCH4
+03E     @DIV3232.@SCRATCH4
+03F     @MULFF.@SCRATCH5
+03F     @DIV3232.@SCRATCH5
+077     @SCRATCH
+078     @SCRATCH
+078     _RETURN_
+079     @SCRATCH
+07A     @SCRATCH
+09C.6   C1OUT
+09C.7   C2OUT
+10D-10E @READ_PROGRAM_MEMORY8.P1
+10D-10E @WRITE_PROGRAM_MEMORY8.P2
+
+ROM Allocation:
+000004  LCD_INIT_STRING.call
+000008  LCD_INIT_STRING.data
+00000C  @const798.call
+000015  @const800.call
+00001E  @const801.call
+000027  @const802.call
+000030  @const803.call
+000039  @const805.call
+000042  @const806.call
+00004B  @const807.call
+000055  @const808.call
+000062  @delay_ms2
+000077  lcd_send_nibble
+0000AA  lcd_read_nibble
+0000E3  lcd_send_byte
+0000E6  lcd_read_byte
+00014A  lcd_init
+00019B  lcd_gotoxy
+0001BE  lcd_putc
+0001E2  @PSTRINGC7_781
+000238  @MULFF
+0002AD  DoKhoangCach
+0002D8  @ITOF
+00030A  @DIVFF
+0003FF  @FLT
+00043E  @PSTRINGCN7_781
+000495  @DIV3232
+0004E4  @PRINTF_L32D_781FPFPF
+00050B  @FTOSD
+0005C6  MAIN
+0005C6  @cinit1
+0005D2  @cinit2
+
+Project Directory:
+    H:\1.HK1 (Nam 3)\Do An 3 (Do Khoang Cach)\101183_NguyenDucThang_10118510\CODE\
+
+Project Files:
+    DoKhoangCach(PR3).c                                     [08-Jan-21 10:48  CRC=493C0C2E]
+    C:\Program Files (x86)\PICC\Devices\16F877A.h           [18-Apr-14 16:56  CRC=4F277C97]
+    C:\Program Files (x86)\PICC\Devices\lcd.h               [20-Nov-20 23:54  CRC=86FF299B]
+    C:\Program Files (x86)\PICC\Drivers\math.h              [28-Sep-12 11:35  CRC=546412C9]
+
+Source signature=C82AD7F2
+
+Units:
+    DoKhoangCach(PR3) (main)
+
+Compiler Settings:
+    Processor:      PIC16F877A
+    Pointer Size:   16
+    ADC Range:      0-1023
+    Opt Level:      9
+    Short,Int,Long: UNSIGNED: 1,8,16
+    Float,Double:   32,32
+    Compile Mode:       CCS5
+
+Output Files:
+    XREF file:   DoKhoangCach(PR3).xsym
+    Errors:      DoKhoangCach(PR3).err
+    Ext Symbols: DoKhoangCach(PR3).esym
+    INHX8:       DoKhoangCach(PR3).hex
+    Symbols:     DoKhoangCach(PR3).sym
+    List:        DoKhoangCach(PR3).lst
+    Debug/COFF:  DoKhoangCach(PR3).cof
+    Project:     DoKhoangCach(PR3).ccspjt
+    Call Tree:   DoKhoangCach(PR3).tre
+    Statistics:  DoKhoangCach(PR3).STA
